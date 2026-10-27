@@ -46,7 +46,8 @@ const fr = {
     ],
     reader: {
       title: "La démo",
-      hint: "Choisissez un document, puis passez-le en qualité fax pour voir ce qui change quand le scan est mauvais. Survolez un champ pour voir où il a été lu.",
+      hint: "Choisissez un document, puis passez-le en qualité fax pour voir ce qui change quand le scan est mauvais. Survolez ou touchez un champ pour voir où il a été lu.",
+      tapHint: "Touchez un cadre sur le document pour lire son champ.",
       clean: "Scan net",
       fax: "Qualité fax",
       fieldsTitle: "Champs extraits",
@@ -465,7 +466,8 @@ const en: Dict = {
     ],
     reader: {
       title: "The demo",
-      hint: "Pick a document, then switch it to fax quality to see what changes when the scan is bad. Hover a field to see where it was read.",
+      hint: "Pick a document, then switch it to fax quality to see what changes when the scan is bad. Hover or tap a field to see where it was read.",
+      tapHint: "Tap a box on the document to read its field.",
       clean: "Clean scan",
       fax: "Fax quality",
       fieldsTitle: "Extracted fields",

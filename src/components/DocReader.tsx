@@ -17,10 +17,19 @@ export function DocReader() {
   const { lang } = useLang();
   const [docId, setDocId] = useState<SynthDoc["id"]>("attestation");
   const [fax, setFax] = useState(false);
+  // Hover previews a field (mouse only); a click or a tap pins it, so the demo
+  // works on a phone, where there is no hover.
   const [hover, setHover] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<string | null>(null);
   const [showJson, setShowJson] = useState(false);
 
   const doc = documents.find((d) => d.id === docId)!;
+  const activeKey = hover ?? pinned;
+  const activeField = doc.fields.find((f) => f.key === activeKey);
+  const pin = (key: string) => setPinned((k) => (k === key ? null : key));
+  const mouseOnly = (key: string | null) => (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") setHover(key);
+  };
 
   const output = Object.fromEntries(
     doc.fields.map((f) => [f.key, { value: reading(doc, f, fax).value, box: normalisedBox(doc, f) }]),
@@ -35,7 +44,10 @@ export function DocReader() {
               key={d.id}
               role="tab"
               aria-selected={d.id === docId}
-              onClick={() => setDocId(d.id)}
+              onClick={() => {
+                setDocId(d.id);
+                setPinned(null);
+              }}
               className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                 d.id === docId ? "border-ink bg-ink text-paper" : "border-rule text-ink-soft hover:border-ink-faint"
               }`}
@@ -72,13 +84,17 @@ export function DocReader() {
           {doc.fields.map((f) => {
             const b = normalisedBox(doc, f);
             const { flagged } = reading(doc, f, fax);
-            const active = hover === f.key;
+            const active = activeKey === f.key;
             return (
-              <div
+              <button
+                type="button"
                 key={`${doc.id}-${fax}-${f.key}`}
-                onMouseEnter={() => setHover(f.key)}
-                onMouseLeave={() => setHover(null)}
-                className="absolute rounded-[2px] transition-[background-color,outline-width] duration-150"
+                onPointerEnter={mouseOnly(f.key)}
+                onPointerLeave={mouseOnly(null)}
+                onClick={() => pin(f.key)}
+                aria-label={f.key}
+                aria-pressed={pinned === f.key}
+                className="absolute cursor-pointer rounded-[2px] transition-[background-color,outline-width] duration-150"
                 style={{
                   left: `${b.x0 * 100}%`,
                   top: `${b.y0 * 100}%`,
@@ -97,10 +113,31 @@ export function DocReader() {
                 >
                   {f.key}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
+
+        {/* Phones and tablets: the field list sits below the fold, so a tapped
+            box answers right under the document. */}
+        <p className="-mt-3 min-h-[2.75rem] rounded-sm border border-rule px-3 py-2 text-sm lg:hidden" aria-live="polite">
+          {activeField ? (
+            (() => {
+              const r = reading(doc, activeField, fax);
+              return (
+                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <span className="font-mono text-[11px] text-ink-faint">{activeField.key}</span>
+                  <span className={r.flagged ? "text-flag" : "text-ink"}>{r.value}</span>
+                  <span className={`font-mono text-[10px] uppercase ${r.flagged ? "text-flag" : "text-annot"}`}>
+                    {r.flagged ? t.flagged : t.verified}
+                  </span>
+                </span>
+              );
+            })()
+          ) : (
+            <span className="text-ink-faint">{t.tapHint}</span>
+          )}
+        </p>
 
         <div className="flex flex-col">
           <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">
@@ -123,10 +160,11 @@ export function DocReader() {
               return (
                 <li
                   key={f.key}
-                  onMouseEnter={() => setHover(f.key)}
-                  onMouseLeave={() => setHover(null)}
-                  className={`flex items-baseline justify-between gap-3 px-1 py-2 transition-colors ${
-                    hover === f.key ? (r.flagged ? "bg-flag-wash" : "bg-annot-wash") : ""
+                  onPointerEnter={mouseOnly(f.key)}
+                  onPointerLeave={mouseOnly(null)}
+                  onClick={() => pin(f.key)}
+                  className={`flex cursor-pointer items-baseline justify-between gap-3 px-1 py-2 transition-colors ${
+                    activeKey === f.key ? (r.flagged ? "bg-flag-wash" : "bg-annot-wash") : ""
                   }`}
                 >
                   <span className="font-mono text-[11px] text-ink-faint">{f.key}</span>
