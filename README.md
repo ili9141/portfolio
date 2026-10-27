@@ -1,7 +1,7 @@
 # Ilias Ait Barrehil — portfolio
 
 Two sides of the same site: the AI work (`/`) and the backend work (`/dev`). The
-**boom** button in the navbar switches between them.
+**AI / DEV** switch in the navbar moves between them, through a point explosion.
 
 Next.js 16 (App Router), React 19, Tailwind CSS 4, TypeScript. All copy, French
 and English, lives in `src/content/site.ts`.

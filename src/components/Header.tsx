@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useLang, useT } from "./lang";
 import { explode, EXPLODE_TOTAL_MS, GREEN, MAGENTA } from "./LatentField";
 
-// The boom button is how you switch sides: from the AI portfolio (magenta) to
+// The AI/DEV switch is how you switch sides: from the AI portfolio (magenta) to
 // the dev side (green, /dev), and back. The page change happens at the moment
 // the points are all gathered in the centre (see explode() in LatentField).
 const DEV = "/dev";
@@ -14,9 +14,18 @@ const DEV = "/dev";
 // One safety timer for the whole page: a newer explosion cancels the older timer.
 let safetyTimer: number | undefined;
 
-function BoomButton() {
+// Each side's own colour, fixed rather than read from the theme: on the AI page
+// the DEV segment still has to show green.
+const SIDES = [
+  { key: "ai", href: "/", label: { fr: "IA", en: "AI" }, on: "bg-[#99084b] text-white", tint: "hover:text-[#f4529d]" },
+  { key: "dev", href: DEV, label: { fr: "DEV", en: "DEV" }, on: "bg-[#00e64d] text-[#02160a]", tint: "hover:text-[#3dff7f]" },
+] as const;
+
+/** Same shape as the FR/EN switch. Picking the other side sets off the explosion. */
+function SideSwitch() {
   const pathname = usePathname();
   const router = useRouter();
+  const { lang } = useLang();
   const onDev = pathname === DEV;
   const href = onDev ? "/" : DEV;
 
@@ -41,15 +50,23 @@ function BoomButton() {
   };
 
   return (
-    <button
-      onClick={go}
-      className="group inline-flex items-center gap-2 rounded-full border border-annot/60 px-3 py-1.5 font-mono sm:px-3.5 text-[13px] uppercase tracking-wider text-annot transition-colors hover:border-brand hover:bg-brand hover:text-on-brand"
-    >
-      <span className="relative inline-block h-2 w-2 rounded-full bg-annot group-hover:bg-on-brand">
-        <span className="absolute inset-0 animate-ping rounded-full bg-annot/60 group-hover:hidden" />
-      </span>
-      {onDev ? "↩ boom" : "boom"}
-    </button>
+    <div className="flex rounded-full border border-ink-faint/60 p-1 font-mono text-[13px] font-semibold sm:text-sm" role="group" aria-label="AI / Dev">
+      {SIDES.map((s) => {
+        const active = (s.key === "dev") === onDev;
+        return (
+          <button
+            key={s.key}
+            onClick={active ? undefined : go}
+            aria-pressed={active}
+            className={`rounded-full px-3 py-1.5 uppercase tracking-wider transition-colors sm:px-4 ${
+              active ? `${s.on} cursor-default` : `text-ink-soft ${s.tint}`
+            }`}
+          >
+            {s.label[lang]}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -79,7 +96,7 @@ export function Header() {
         <Link href="/" className="display text-2xl tracking-tight">
           IAB<span className="text-annot">.</span>
         </Link>
-        {/* From lg up only: with BOOM and FR/EN, five links do not fit a tablet's width. */}
+        {/* From lg up only: with the AI/DEV and FR/EN switches, five links do not fit a tablet's width. */}
         <nav className="hidden items-center gap-6 font-mono text-[13px] uppercase tracking-wider text-ink lg:flex xl:gap-10">
           {links.map(([href, label]) => (
             <a key={href} href={href} className="group relative transition-colors hover:text-ink">
@@ -89,14 +106,14 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-2 sm:gap-3">
-          <BoomButton />
-          <div className="flex rounded-full border border-rule p-1 font-mono text-[13px]" role="group" aria-label="Language">
+          <SideSwitch />
+          <div className="flex rounded-full border border-ink-faint/60 p-1 font-mono text-[13px] font-semibold sm:text-sm" role="group" aria-label="Language">
             {(["fr", "en"] as const).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
                 aria-pressed={lang === l}
-                className={`rounded-full px-2.5 py-1.5 uppercase transition-colors sm:px-3.5 ${lang === l ? "bg-ink text-paper" : "text-ink-faint hover:text-ink"}`}
+                className={`rounded-full px-2.5 py-1.5 uppercase transition-colors sm:px-3.5 ${lang === l ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
               >
                 {l}
               </button>
