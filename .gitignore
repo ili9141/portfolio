@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# tokenizer download used by scripts/tokenize-titles.py
+scripts/.cache/
+
+# private notes, not for the public repo
+TODO.md

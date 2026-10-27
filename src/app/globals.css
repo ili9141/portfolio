@@ -1,26 +1,426 @@
 @import "tailwindcss";
 
+/* Black and magenta. The brand shade is #99084b. It is too dark for small text
+   on black (2.4:1), so it is used for fills (buttons, tags, the boxes on the
+   white documents) and a lighter tint of the same hue (#f4529d, 6.4:1) is used
+   for lines, points and small accent text.
+   --annot only ever marks something a model read; --flag only ever marks
+   something the verifier flagged. Anything with .doc is a document: white
+   paper with dark ink. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #050505;
+  --sheet: #111012;
+  --ink: #f5f1f3;
+  --ink-soft: #cdc6cb;
+  --ink-faint: #8f888d;
+  --rule: rgba(255, 255, 255, 0.09);
+  --brand: #99084b;
+  --on-brand: #ffffff;
+  --annot: #f4529d;
+  --annot-rgb: 244, 82, 157;
+  --annot-wash: rgba(244, 82, 157, 0.12);
+  --on-annot: #1a0010;
+  --flag: #ffb020;
+  --flag-wash: rgba(255, 176, 32, 0.16);
+  --ok: #f4529d;
+  --on-ok: #1a0010;
+  --code-bg: #0b0a0b;
+  --code-fg: #f7d3e4;
+  --glow-rgb: 153, 8, 75;
+}
+
+/* The second page: same system, coder green instead of magenta. The fill is
+   bright, so text on it is near-black rather than white. */
+[data-theme="green"] {
+  --brand: #00e64d;
+  --on-brand: #02160a;
+  --annot: #3dff7f;
+  --annot-rgb: 61, 255, 127;
+  --annot-wash: rgba(61, 255, 127, 0.12);
+  --on-annot: #02160a;
+  --ok: #3dff7f;
+  --on-ok: #02160a;
+  --code-fg: #c8ffd9;
+  --glow-rgb: 0, 200, 70;
+}
+
+.doc {
+  --sheet: #ffffff;
+  --paper: #f5f4f4;
+  --rule: #dedadc;
+  --ink: #1b1418;
+  --ink-soft: #4d4349;
+  --ink-faint: #7d7379;
+  --annot: #99084b;
+  --annot-wash: rgba(153, 8, 75, 0.1);
+  --on-annot: #ffffff;
+  --flag: #d9480f;
+  --flag-wash: rgba(217, 72, 15, 0.12);
+  --ok: #99084b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-brand: var(--brand);
+  --color-on-brand: var(--on-brand);
+  --color-annot: var(--annot);
+  --color-annot-wash: var(--annot-wash);
+  --color-on-annot: var(--on-annot);
+  --color-flag: var(--flag);
+  --color-flag-wash: var(--flag-wash);
+  --color-ok: var(--ok);
+  --color-on-ok: var(--on-ok);
+  --color-code-bg: var(--code-bg);
+  --color-code-fg: var(--code-fg);
+  --font-sans: var(--font-archivo);
+  --font-mono: var(--font-martian);
+  --font-doc: var(--font-newsreader);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scroll-behavior: smooth;
+}
+
+/* A faint magenta glow at the top; the point field does the rest. */
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-archivo), system-ui, sans-serif;
+}
+
+/* Each page wraps itself in .theme-root, so the glow follows the page's theme. */
+.theme-root {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 70% -10%, rgba(var(--glow-rgb), 0.22), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 0% 35%, rgba(var(--glow-rgb), 0.1), transparent 60%);
+  background-repeat: no-repeat;
+}
+
+/* During an explosion everything but the point field fades out, and fades back
+   in on the new page once the points have landed. */
+.theme-root header,
+.theme-root main {
+  transition:
+    opacity 380ms ease-out,
+    transform 480ms cubic-bezier(0.2, 0.8, 0.3, 1),
+    filter 380ms ease-out;
+}
+html.exploding .theme-root header,
+html.exploding .theme-root main {
+  opacity: 0;
+  transform: translateY(14px) scale(0.99);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+::selection {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+/* Headings: Archivo stretched wide and heavy, like a drawing's title block. */
+.display {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 0.98;
+}
+
+.sheet {
+  background: var(--sheet);
+  color: var(--ink);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.04),
+    0 18px 40px -22px rgba(0, 0, 0, 0.6);
+}
+
+/* Registration marks that appear in the corners of a card on hover. */
+/* `translate`, not `transform`, so the hover lift doesn't fight .reveal. */
+.marks {
+  position: relative;
+  transition:
+    translate 220ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    opacity 600ms ease,
+    transform 700ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.marks::before,
+.marks::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--annot);
+  opacity: 0;
+  transition:
+    opacity 200ms,
+    inset 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  pointer-events: none;
+}
+.marks::before {
+  top: 0;
+  left: 0;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.marks::after {
+  right: 0;
+  bottom: 0;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+@media (hover: hover) {
+  .marks:hover {
+    translate: 0 -3px;
+  }
+  .marks:hover::before {
+    opacity: 1;
+    top: -7px;
+    left: -7px;
+  }
+  .marks:hover::after {
+    opacity: 1;
+    right: -7px;
+    bottom: -7px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Scroll reveal. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 600ms ease,
+    transform 700ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    translate 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* A section title boxed the way the model boxes a field. */
+.fbox {
+  position: relative;
+  display: inline-block;
+  padding: 10px 16px 12px;
+  margin-left: -16px;
+  /* It starts 16px left of the column; capping it here keeps its right edge
+     inside the column when a long title fills the width (360px phones). */
+  max-width: calc(100% + 16px);
+}
+.fbox-frame {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--annot);
+  border-radius: 3px;
+  background: rgba(153, 8, 75, 0.08);
+  clip-path: inset(0 100% 100% 0);
+  opacity: 0.8;
+  transition: clip-path 900ms cubic-bezier(0.65, 0, 0.35, 1) 250ms;
+  pointer-events: none;
+}
+.fbox-tag {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  transform: translateY(-100%);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: var(--font-martian), monospace;
+  font-size: 10px;
+  line-height: 1.6;
+  padding: 0 6px;
+  border-radius: 3px 3px 0 0;
+  opacity: 0;
+  transition: opacity 300ms 1000ms;
+}
+.fbox.is-in .fbox-frame {
+  clip-path: inset(0 0 0 0);
+}
+.fbox.is-in .fbox-tag {
+  opacity: 1;
+}
+
+/* Loss curve between sections. */
+/* No non-scaling-stroke on the paths: it breaks the pathLength-based dash,
+   and the curve stops short of the end. The viewBox is close enough to the
+   rendered aspect that the stroke barely distorts. */
+.loss path {
+  fill: none;
+}
+.loss line {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+.loss-axis {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.loss-train,
+.loss-val {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1800ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+.loss-train {
+  stroke: var(--annot);
+  stroke-width: 1.5;
+  opacity: 0.8;
+}
+.loss-val {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+  opacity: 0.6;
+  transition-delay: 200ms;
+}
+.loss.is-in .loss-train,
+.loss.is-in .loss-val {
+  stroke-dashoffset: 0;
+}
+
+/* The hero name split into its Qwen3 tokens: a faint box per token, tinted in
+   alternation, with the token id in a tag (the same look as the field tags on
+   the documents). Boxes sweep in left to right via --i. */
+.tok {
+  position: relative;
+  display: inline-block;
+}
+.tok-box {
+  position: absolute;
+  inset: 0.04em -0.015em -0.02em;
+  border-radius: 0.06em;
+  border: 1.5px solid rgba(var(--annot-rgb), 0.55);
+  background: rgba(var(--annot-rgb), 0.1);
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity 260ms ease calc(var(--i) * 70ms),
+    transform 260ms ease calc(var(--i) * 70ms);
+  pointer-events: none;
+}
+/* The first token of a word anchors its tag to its right edge, so a thin
+   first token ("I") can't have its tag covered by the next token's. */
+.tok[data-first="1"] .tok-id {
+  left: auto;
+  right: -1.5px;
+}
+.tok[data-alt="1"] .tok-box {
+  background: rgba(var(--glow-rgb), 0.28);
+}
+.tok-id {
+  position: absolute;
+  left: -1.5px;
+  bottom: calc(100% - 0.04em);
+  padding: 0 5px;
+  border-radius: 3px 3px 0 0;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: var(--font-martian), monospace;
+  font-size: 11px;
+  font-weight: 400;
+  font-stretch: 100%;
+  letter-spacing: 0;
+  line-height: 1.6;
+  opacity: 0;
+  transition: opacity 260ms ease calc(var(--i) * 70ms + 80ms);
+  pointer-events: none;
+}
+/* Absolutely placed in the gap under the name: it never takes width from the
+   name (which pushed "Barrehil" onto a third line) and never slides under the
+   candidate sheet beside it. */
+.tok-note {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  white-space: nowrap;
+  font-family: var(--font-martian), monospace;
+  font-size: 12px;
+  font-weight: 400;
+  font-stretch: 100%;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  color: var(--annot);
+  opacity: 0;
+  transition: opacity 300ms ease 400ms;
+}
+/* While a boxed title shows its tokens, its section_0X tag steps aside for the
+   token tags (immediately, not after the frame's usual 1 s delay). */
+.fbox.tokens-on .fbox-tag {
+  opacity: 0;
+  transition-delay: 0ms;
+}
+.tokens-on .tok-box {
+  opacity: 1;
+  transform: none;
+}
+.tokens-on .tok-id,
+.tokens-on .tok-note {
+  opacity: 1;
+}
+
+@keyframes scan {
+  from {
+    top: -10%;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes box-in {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
