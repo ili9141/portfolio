@@ -213,7 +213,7 @@ const fr = {
       { name: "Cloud & MLOps", items: ["AWS SageMaker", "S3", "IAM", "Inférence asynchrone", "Docker", "FastAPI", "Vercel"] },
       { name: "Développement", items: ["Python", "TypeScript", "SQL", "Next.js", "React", "Laravel", "Zod"] },
       { name: "Bases de données & sécurité", items: ["PostgreSQL", "Row-Level Security", "Redis", "Rate limiting", "HIPAA"] },
-      { name: "Langues", items: ["Arabe (natif)", "Français (C1)", "Anglais (C1)"] },
+      { name: "Langues", items: ["Arabe (natif)", "Français (courant)", "Anglais (courant)"] },
     ],
   },
   contact: {
@@ -631,7 +631,7 @@ const en: Dict = {
       { name: "Cloud & MLOps", items: ["AWS SageMaker", "S3", "IAM", "Async inference", "Docker", "FastAPI", "Vercel"] },
       { name: "Development", items: ["Python", "TypeScript", "SQL", "Next.js", "React", "Laravel", "Zod"] },
       { name: "Databases & security", items: ["PostgreSQL", "Row-Level Security", "Redis", "Rate limiting", "HIPAA"] },
-      { name: "Languages", items: ["Arabic (native)", "French (C1)", "English (C1)"] },
+      { name: "Languages", items: ["Arabic (native)", "French (fluent)", "English (fluent)"] },
     ],
   },
   contact: {
