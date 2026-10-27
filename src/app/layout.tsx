@@ -33,6 +33,12 @@ const newsreader = localFont({
 });
 
 export const metadata: Metadata = {
+  // The link-preview image (app/opengraph-image.tsx, and dev/ for /dev) needs an
+  // absolute URL. Vercel sets this variable to the production domain on every
+  // deployment; locally it falls back to the dev server.
+  metadataBase: new URL(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3100",
+  ),
   title: "Ilias Ait Barrehil — Ingénieur IA & Data",
   description:
     "Élève ingénieur IA & Data Science à l'EMSI Marrakech. J'entraîne un modèle qui lit des documents médicaux scannés et montre où il a lu chaque valeur. Stage PFE de 4 mois à partir de février 2027.",
