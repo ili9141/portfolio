@@ -109,6 +109,13 @@ export function DevProjects() {
                   <span className="text-[15px] text-ink-soft">{p.link.note}</span>
                 </a>
               )}
+              {/* Where the others link to their code: say why this one cannot. */}
+              {"closed" in p && p.closed && (
+                <span className="mt-5 inline-flex items-center gap-2 self-start rounded-full border border-rule px-4 py-1.5 text-[15px] text-ink-faint">
+                  <span aria-hidden>🔒</span>
+                  {p.closed}
+                </span>
+              )}
               <div className="mt-5">
                 <Chips items={p.stack} />
               </div>

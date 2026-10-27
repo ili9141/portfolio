@@ -149,7 +149,7 @@ const fr = {
         title: "Détecter les messages toxiques en darija",
         body: "Il n'existe presque pas de données étiquetées en darija. On est partis d'un XLM-RoBERTa entraîné sur Jigsaw (160 000 commentaires en anglais), qu'on a adapté au darija avec DarLoad (23 000 exemples). Une loss masquée l'empêche d'oublier ce qu'il savait déjà. On l'a ensuite distillé dans un DistilBERT 4 fois plus léger, servi par une API FastAPI sur Hugging Face Spaces.",
         figures: [
-          { v: "0,895", l: "Macro F1" },
+          { v: "0,895", l: "F1 « toxique » · DarLoad" },
           { v: "60 ms", l: "par prédiction" },
           { v: "4×", l: "plus léger" },
         ],
@@ -394,6 +394,7 @@ const fr = {
         {
           name: "Mckenzo",
           meta: "Stage · Rabat · été 2025",
+          closed: "Dépôt privé",
           title: "Une plateforme pour donner son sang plus souvent",
           body: "Les donneurs réguliers gagnent des récompenses : coupons, crédits mobiles, réductions chez des partenaires. J'ai fait l'essentiel du site : l'authentification, la gestion des donneurs et de leur historique, le tableau de bord d'administration, les partenaires et la distribution automatique des coupons.",
           figures: [
@@ -567,7 +568,7 @@ const en: Dict = {
         title: "Spotting toxic messages in Darija",
         body: "There's almost no labelled data in Darija. We started from an XLM-RoBERTa trained on Jigsaw (160,000 English comments) and adapted it to Darija with DarLoad (23,000 examples). A masked loss stops it forgetting what it already knew. We then distilled it into a DistilBERT 4 times lighter, served through a FastAPI API on Hugging Face Spaces.",
         figures: [
-          { v: "0.895", l: "Macro F1" },
+          { v: "0.895", l: "F1 “toxic” · DarLoad" },
           { v: "60 ms", l: "per prediction" },
           { v: "4×", l: "lighter" },
         ],
@@ -812,6 +813,7 @@ const en: Dict = {
         {
           name: "Mckenzo",
           meta: "Internship · Rabat · summer 2025",
+          closed: "Private repository",
           title: "A platform to give blood more often",
           body: "Regular donors earn rewards: coupons, mobile credit, discounts at partner shops. I built most of the site: authentication, donor management and history, the admin dashboard, partners and automatic coupon distribution.",
           figures: [
