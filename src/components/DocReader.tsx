@@ -22,8 +22,19 @@ export function DocReader() {
   const [hover, setHover] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
   const [showJson, setShowJson] = useState(false);
+  // Nothing is read until the visitor asks: the analysis belongs to one
+  // document at one quality, so switching either brings the button back.
+  // `run` re-keys the animations, so "Run again" replays the scan.
+  const [analysedFor, setAnalysedFor] = useState<string | null>(null);
+  const [run, setRun] = useState(0);
 
   const doc = documents.find((d) => d.id === docId)!;
+  const analysed = analysedFor === `${docId}-${fax}`;
+  const analyse = () => {
+    setAnalysedFor(`${docId}-${fax}`);
+    setRun((r) => r + 1);
+    setPinned(null);
+  };
   const activeKey = hover ?? pinned;
   const activeField = doc.fields.find((f) => f.key === activeKey);
   const pin = (key: string) => setPinned((k) => (k === key ? null : key));
@@ -60,7 +71,10 @@ export function DocReader() {
           {[false, true].map((v) => (
             <button
               key={String(v)}
-              onClick={() => setFax(v)}
+              onClick={() => {
+                setFax(v);
+                setPinned(null);
+              }}
               aria-pressed={fax === v}
               className={`rounded-full px-3 py-1 transition-colors ${fax === v ? "bg-paper text-ink shadow-sm" : "text-ink-faint"}`}
             >
@@ -68,27 +82,47 @@ export function DocReader() {
             </button>
           ))}
         </div>
+        {analysed && (
+          <button
+            onClick={analyse}
+            className="rounded-full border border-annot/60 px-3.5 py-1 text-sm text-annot transition-colors hover:border-brand hover:bg-brand hover:text-on-brand"
+          >
+            ↻ {t.rerun}
+          </button>
+        )}
       </div>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[1.45fr_1fr]">
         <div className="doc relative self-start overflow-hidden rounded-sm border border-rule bg-white">
           <DocSvg doc={doc} fax={fax} />
-          {/* A scan line passes on every change, and each box appears as the
+          {!analysed && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/10">
+              <button
+                onClick={analyse}
+                className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-base font-semibold text-on-brand shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)] transition-transform hover:-translate-y-0.5"
+              >
+                <span aria-hidden>▶</span> {t.analyze}
+              </button>
+            </div>
+          )}
+          {/* A scan line passes on each analysis, and each box appears as the
               line reaches it, so the order you see is the order on the page. */}
-          <span
-            key={`scan-${doc.id}-${fax}`}
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 z-10 h-16 bg-gradient-to-b from-transparent via-annot/35 to-transparent"
-            style={{ animation: `scan ${SCAN_MS}ms linear both` }}
-          />
-          {doc.fields.map((f) => {
+          {analysed && (
+            <span
+              key={`scan-${run}`}
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 z-10 h-16 bg-gradient-to-b from-transparent via-annot/35 to-transparent"
+              style={{ animation: `scan ${SCAN_MS}ms linear both` }}
+            />
+          )}
+          {analysed && doc.fields.map((f) => {
             const b = normalisedBox(doc, f);
             const { flagged } = reading(doc, f, fax);
             const active = activeKey === f.key;
             return (
               <button
                 type="button"
-                key={`${doc.id}-${fax}-${f.key}`}
+                key={`${run}-${f.key}`}
                 onPointerEnter={mouseOnly(f.key)}
                 onPointerLeave={mouseOnly(null)}
                 onClick={() => pin(f.key)}
@@ -121,7 +155,9 @@ export function DocReader() {
         {/* Phones and tablets: the field list sits below the fold, so a tapped
             box answers right under the document. */}
         <p className="-mt-3 min-h-[2.75rem] rounded-sm border border-rule px-3 py-2 text-sm lg:hidden" aria-live="polite">
-          {activeField ? (
+          {!analysed ? (
+            <span className="text-ink-faint">{t.notRead}</span>
+          ) : activeField ? (
             (() => {
               const r = reading(doc, activeField, fax);
               return (
@@ -157,6 +193,13 @@ export function DocReader() {
           <ul className="mt-2 divide-y divide-rule border-y border-rule">
             {doc.fields.map((f) => {
               const r = reading(doc, f, fax);
+              if (!analysed)
+                return (
+                  <li key={f.key} className="flex items-baseline justify-between gap-3 px-1 py-2">
+                    <span className="font-mono text-[11px] text-ink-faint">{f.key}</span>
+                    <span className="text-sm text-ink-faint">—</span>
+                  </li>
+                );
               return (
                 <li
                   key={f.key}
@@ -181,14 +224,16 @@ export function DocReader() {
             })}
           </ul>
 
-          <button
-            onClick={() => setShowJson((v) => !v)}
-            className="mt-4 self-start font-mono text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink"
-            aria-expanded={showJson}
-          >
-            {showJson ? "−" : "+"} {t.outputTitle}
-          </button>
-          {showJson && (
+          {analysed && (
+            <button
+              onClick={() => setShowJson((v) => !v)}
+              className="mt-4 self-start font-mono text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink"
+              aria-expanded={showJson}
+            >
+              {showJson ? "−" : "+"} {t.outputTitle}
+            </button>
+          )}
+          {analysed && showJson && (
             <pre className="mt-2 max-h-64 overflow-auto rounded-sm bg-code-bg p-3 font-mono text-[11px] leading-relaxed text-code-fg">
               {JSON.stringify(output, null, 2)}
             </pre>
