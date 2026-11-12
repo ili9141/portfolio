@@ -121,6 +121,16 @@ export function Header() {
           </div>
         </div>
       </div>
+      {/* Phones and tablets: the links get their own row, swipeable if they overflow. */}
+      <nav className="no-scrollbar overflow-x-auto border-t border-rule lg:hidden">
+        <div className="flex w-max items-center gap-6 px-4 py-2.5 font-mono text-[12px] uppercase tracking-wider text-ink-soft sm:px-8">
+          {links.map(([href, label]) => (
+            <a key={href} href={href} className="whitespace-nowrap transition-colors active:text-annot hover:text-ink">
+              {label}
+            </a>
+          ))}
+        </div>
+      </nav>
     </header>
   );
 }

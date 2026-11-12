@@ -85,6 +85,19 @@
 html {
   scroll-behavior: smooth;
 }
+/* Below lg the header has a second row of links (Header.tsx); sections keep
+   their own scroll-margin, this adds that row's height on top of it. */
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-top: 44px;
+  }
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
 /* A faint magenta glow at the top; the point field does the rest. */
 body {
