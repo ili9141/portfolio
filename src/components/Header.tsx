@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLang, useT } from "./lang";
 import { explode, EXPLODE_TOTAL_MS, GREEN, MAGENTA } from "./LatentField";
 
@@ -74,6 +74,41 @@ export function Header() {
   const all = useT();
   const { lang, setLang } = useLang();
   const pathname = usePathname();
+  // The menu remembers the page it was opened on, so switching sides closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const setOpen = (next: boolean | ((o: boolean) => boolean)) =>
+    setOpenOn((prev) => ((typeof next === "function" ? next(prev === pathname) : next) ? pathname : null));
+
+  // Close it on Escape, and when the window grows past lg.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenOn(null);
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onMq = () => mq.matches && setOpenOn(null);
+    window.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onMq);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onMq);
+    };
+  }, [open]);
+
+  const langSwitch = (
+    <div className="flex rounded-full border border-ink-faint/60 p-1 font-mono text-[13px] font-semibold sm:text-sm" role="group" aria-label="Language">
+      {(["fr", "en"] as const).map((l) => (
+        <button
+          key={l}
+          onClick={() => setLang(l)}
+          aria-pressed={lang === l}
+          className={`rounded-full px-2.5 py-1.5 uppercase transition-colors sm:px-3.5 ${lang === l ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+
   const links =
     pathname === DEV
       ? ([
@@ -107,30 +142,39 @@ export function Header() {
         </nav>
         <div className="flex items-center gap-2 sm:gap-3">
           <SideSwitch />
-          <div className="flex rounded-full border border-ink-faint/60 p-1 font-mono text-[13px] font-semibold sm:text-sm" role="group" aria-label="Language">
-            {(["fr", "en"] as const).map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                aria-pressed={lang === l}
-                className={`rounded-full px-2.5 py-1.5 uppercase transition-colors sm:px-3.5 ${lang === l ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
+          <div className="hidden lg:block">{langSwitch}</div>
+          {/* Below lg the links do not fit beside the switches: they go behind a menu button. */}
+          <button
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Fermer le menu / Close menu" : "Menu"}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-ink-faint/60 text-ink lg:hidden"
+          >
+            <span className="relative block h-3 w-4">
+              <span className={`absolute left-0 block h-[2px] w-4 bg-current transition-transform duration-200 ${open ? "top-[5px] rotate-45" : "top-0"}`} />
+              <span className={`absolute left-0 top-[5px] block h-[2px] w-4 bg-current transition-opacity duration-200 ${open ? "opacity-0" : ""}`} />
+              <span className={`absolute left-0 block h-[2px] w-4 bg-current transition-transform duration-200 ${open ? "top-[5px] -rotate-45" : "top-[10px]"}`} />
+            </span>
+          </button>
         </div>
       </div>
-      {/* Phones and tablets: the links get their own row, swipeable if they overflow. */}
-      <nav className="no-scrollbar overflow-x-auto border-t border-rule lg:hidden">
-        <div className="flex w-max items-center gap-6 px-4 py-2.5 font-mono text-[12px] uppercase tracking-wider text-ink-soft sm:px-8">
-          {links.map(([href, label]) => (
-            <a key={href} href={href} className="whitespace-nowrap transition-colors active:text-annot hover:text-ink">
-              {label}
-            </a>
-          ))}
-        </div>
-      </nav>
+      {/* Phones and tablets: the links and the language switch, in a panel under the bar. */}
+      {open && (
+        <nav id="mobile-menu" className="border-t border-rule bg-paper/95 lg:hidden">
+          <div className="flex flex-col px-4 py-2 font-mono text-[14px] uppercase tracking-wider sm:px-8">
+            {links.map(([href, label]) => (
+              <a key={href} href={href} onClick={() => setOpen(false)} className="border-b border-rule/60 py-3.5 text-ink transition-colors active:text-annot">
+                {label}
+              </a>
+            ))}
+            <div className="flex items-center justify-between py-3.5">
+              <span className="text-[12px] text-ink-soft">{lang === "fr" ? "Langue" : "Language"}</span>
+              {langSwitch}
+            </div>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
