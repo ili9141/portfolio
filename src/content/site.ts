@@ -149,7 +149,7 @@ const fr = {
     items: [
       {
         name: "AMAN",
-        meta: "EMSI · 2026 · en binôme",
+        meta: "EMSI · 2026 · équipe de 4",
         title: "Détecter les messages toxiques en darija",
         body: "Il n'existe presque pas de données étiquetées en darija. On est partis d'un XLM-RoBERTa entraîné sur Jigsaw (160 000 commentaires en anglais), qu'on a adapté au darija avec DarLoad (23 000 exemples). Une loss masquée l'empêche d'oublier ce qu'il savait déjà. On l'a ensuite distillé dans un DistilBERT 4 fois plus léger, servi par une API FastAPI sur Hugging Face Spaces.",
         figures: [
@@ -161,7 +161,7 @@ const fr = {
       },
       {
         name: "TrendRadar",
-        meta: "EMSI · 2026 · en binôme",
+        meta: "EMSI · 2026 · équipe de 4",
         title: "Savoir si un hashtag va percer",
         body: "On regarde les 15 premières minutes d'un hashtag et on prédit s'il sera viral 12 heures plus tard. Le premier modèle est un XGBoost entraîné sur 1 443 exemples Twitter. On l'a ensuite passé en apprentissage en ligne avec River, pour qu'il continue d'apprendre sur Mastodon et Bluesky. Les signaux sont normalisés par plateforme, parce que 12 messages par minute ne veulent pas dire la même chose partout.",
         figures: [
@@ -572,7 +572,7 @@ const en: Dict = {
     items: [
       {
         name: "AMAN",
-        meta: "EMSI · 2026 · pair project",
+        meta: "EMSI · 2026 · team of 4",
         title: "Spotting toxic messages in Darija",
         body: "There's almost no labelled data in Darija. We started from an XLM-RoBERTa trained on Jigsaw (160,000 English comments) and adapted it to Darija with DarLoad (23,000 examples). A masked loss stops it forgetting what it already knew. We then distilled it into a DistilBERT 4 times lighter, served through a FastAPI API on Hugging Face Spaces.",
         figures: [
@@ -584,7 +584,7 @@ const en: Dict = {
       },
       {
         name: "TrendRadar",
-        meta: "EMSI · 2026 · pair project",
+        meta: "EMSI · 2026 · team of 4",
         title: "Will this hashtag take off?",
         body: "We watch the first 15 minutes of a hashtag and predict whether it will be viral 12 hours later. The first model is an XGBoost trained on 1,443 Twitter examples. We then moved it to online learning with River so it keeps learning on Mastodon and Bluesky. Signals are normalised per platform, because 12 posts a minute doesn't mean the same thing everywhere.",
         figures: [
